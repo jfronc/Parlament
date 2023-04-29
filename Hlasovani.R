@@ -21,8 +21,8 @@ colnames(organy) <- c('org_id', 'sup_org_id', 'type_org_id', 'org_abbreviation',
 kluby <- filter(organy, type_org_id == 1)
 
 zarazeni <- read.table("C:/Users/jarom/Downloads/poslanci/zarazeni.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
-colnames(zarazeni) <- c('id', 'of_id', 'cl_funkce', 'since', 'until', 'since_f', 'until_f', 'dummy')
+colnames(zarazeni) <- c('id', 'org_id', 'cl_funkce', 'since', 'until', 'since_f', 'until_f', 'dummy')
 zarazeni$since %<>% as.Date()
 zarazeni$until %<>% as.Date()
 
-zarazeni %>% filter(of_id %in% kluby$org_id) %>% filter(since <= as.Date("2023-01-01") & (until >= as.Date("2022-01-01") | is.na(until))) %>% group_by(of_id) %>% summarize(count = n())
+zarazeni %>%  filter(org_id %in% kluby$org_id) %>%  left_join(kluby %>% select(org_id, org_abbreviation), by = "org_id") %>% filter(since <= as.Date("2023-01-01") & (until >= as.Date("2023-01-01") | is.na(until))) %>% group_by(org_abbreviation) %>% summarize(count = n()) %>% bind_rows(data.frame(org_abbreviation = "Celkem", count = sum(.$count)))
