@@ -1,3 +1,5 @@
+library(magrittr)
+
 hl1993 <- read.table("C:/Users/jarom/Downloads/hl-1993ps/hl1993s.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
 colnames(hl1993) <- c("id_hlasovani", "id_organ", "schuze", "cislo", "bod", "datum", "cas", "pro", "proti", "zdrzel", "nehlasoval", "prihlaseno", "kvorum", "druh_hlasovani", "vysledek", "nazev_dlouhy", "nazev_kratky")
 
@@ -11,3 +13,8 @@ colnames(osoby) <- c('id', 'title_pre', 'family_name', 'given_name', 'title_post
 
 organy <- read.table("C:/Users/jarom/Downloads/poslanci/organy.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
 colnames(organy) <- c('org_id', 'sup_org_id', 'type_org_id', 'org_abbreviation', 'org_name_cs', 'org_name_en', 'org_since', 'org_until', 'priority', 'members_base', 'dummy')
+
+zarazeni <- read.table("C:/Users/jarom/Downloads/poslanci/zarazeni.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
+colnames(zarazeni) <- c('id', 'of_id', 'cl_funkce', 'since', 'until', 'since_f', 'until_f', 'dummy')
+zarazeni$since %<>% as.Date()
+zarazeni$until %<>% as.Date()
