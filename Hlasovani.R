@@ -1,3 +1,4 @@
+library(dplyr)
 library(magrittr)
 library(readr)
 
@@ -16,6 +17,7 @@ organy <- read_delim("C:/Users/jarom/Downloads/poslanci/organy.unl",
                     delim = "|", 
                     col_names = FALSE, 
                     locale = locale(encoding = "windows-1250"))
+# read.table nepřevedla správně některé řádky
 colnames(organy) <- c('org_id', 'sup_org_id', 'type_org_id', 'org_abbreviation', 'org_name_cs', 'org_name_en', 'org_since', 'org_until', 'priority', 'members_base', 'dummy')
 
 kluby <- filter(organy, type_org_id == 1)
@@ -26,3 +28,7 @@ zarazeni$since %<>% as.Date()
 zarazeni$until %<>% as.Date()
 
 zarazeni %>%  filter(org_id %in% kluby$org_id) %>%  left_join(kluby %>% select(org_id, org_abbreviation), by = "org_id") %>% filter(since <= as.Date("2023-01-01") & (until >= as.Date("2023-01-01") | is.na(until))) %>% group_by(org_abbreviation) %>% summarize(count = n()) %>% bind_rows(data.frame(org_abbreviation = "Celkem", count = sum(.$count)))
+
+kluby_n <- function(date) {
+  zarazeni %>%  filter(org_id %in% kluby$org_id) %>%  left_join(kluby %>% select(org_id, org_abbreviation), by = "org_id") %>% filter(since <= as.Date(date) & (until >= as.Date(date) | is.na(until))) %>% group_by(org_abbreviation) %>% summarize(count = n()) %>% bind_rows(data.frame(org_abbreviation = "Celkem", count = sum(.$count)))
+}
