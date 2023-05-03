@@ -30,9 +30,9 @@ zarazeni$until %<>% as.Date()
 
 kluby_n <- function(date) {
   zarazeni %>% 
-  filter(cl_funkce == 0) %>%  # nutné odfiltroval řádky s fcí v PK, obsahuje chyby
+  filter(cl_funkce == 0) %>%  # nutné odfiltroval řádky s fcí v PK; pokud cl_funkce == 1, pak id_of odpovídá funkce:id_funkce.
   filter(org_id %in% kluby$org_id) %>%  left_join(kluby %>% select(org_id, org_abbreviation), by = "org_id") %>% filter(since <= as.Date(date) & (until >= as.Date(date) | is.na(until))) %>% group_by(org_abbreviation) %>% summarize(count = n()) %>% bind_rows(data.frame(org_abbreviation = "Celkem", count = sum(.$count)))
 }
 
 # Kdo byl v klubu ODS ke dni?
-zarazeni %>%  left_join(osoby %>% select(id, given_name, family_name), , by = "id") %>% filter(org_id == "15", since <= as.Date("1993-01-01"), (until >= as.Date("1993-01-01") | is.na(until))) %>% write.xlsx(file = "C:/Users/jarom/Downloads/ODS.xlsx", sheetName = "Sheet1", row.names = FALSE)
+zarazeni %>% left_join(osoby %>% select(id, given_name, family_name), , by = "id") %>% filter(org_id == "15", since <= as.Date("1993-01-01"), (until >= as.Date("1993-01-01") | is.na(until))) %>% write.xlsx(file = "C:/Users/jarom/Downloads/ODS.xlsx", sheetName = "Sheet1", row.names = FALSE)
