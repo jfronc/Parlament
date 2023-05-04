@@ -31,8 +31,20 @@ zarazeni$until %<>% as.Date()
 kluby_n <- function(date) {
   zarazeni %>% 
   filter(cl_funkce == 0) %>%  # nutné odfiltroval řádky s fcí v PK; pokud cl_funkce == 1, pak id_of odpovídá funkce:id_funkce.
-  filter(org_id %in% kluby$org_id) %>%  left_join(kluby %>% select(org_id, org_abbreviation), by = "org_id") %>% filter(since <= as.Date(date) & (until >= as.Date(date) | is.na(until))) %>% group_by(org_abbreviation) %>% summarize(count = n()) %>% bind_rows(data.frame(org_abbreviation = "Celkem", count = sum(.$count)))
+  filter(org_id %in% kluby$org_id) %>%  left_join(kluby %>% select(org_id, org_abbreviation), by = "org_id") %>%
+  filter(since <= as.Date(date, origin = "1970-01-01") & (until >= as.Date(date, origin = "1970-01-01") | is.na(until))) %>% group_by(org_abbreviation) %>% summarize(count = n()) %>% bind_rows(data.frame(org_abbreviation = "Celkem", count = sum(.$count)))
 }
+
+# Vývoj počtu mandátů
+dates <- seq(as.Date("2018-01-01"), as.Date("2022-01-01"), by = "month")
+kluby_df <- data.frame() # initialize empty data frame
+  for (date in dates) {
+    kluby_count <- kluby_n(date)
+    kluby_count$date <- as.Date(date, origin = "1970-01-01")
+    kluby_df <- rbind(kluby_df, kluby_count)
+ }
+library(tidyr)
+kluby_df_pivoted <- pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values_fill = 0)
 
 # Kdo byl v klubu ODS ke dni?
 zarazeni %>% left_join(osoby %>% select(id, given_name, family_name), , by = "id") %>% filter(org_id == "15", since <= as.Date("1993-01-01"), (until >= as.Date("1993-01-01") | is.na(until))) %>% write.xlsx(file = "C:/Users/jarom/Downloads/ODS.xlsx", sheetName = "Sheet1", row.names = FALSE)
