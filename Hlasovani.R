@@ -44,7 +44,8 @@ kluby_df <- data.frame() # initialize empty data frame
     kluby_df <- rbind(kluby_df, kluby_count)
  }
 library(tidyr)
-kluby_df_pivoted <- pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values_fill = 0)
+kluby_df_pivoted <- pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values_fill = 0) %>% 
+  distinct(across(-date), .keep_all = TRUE) # odstraní řádky, kde nedošlo ke změně počtů
 
 # Kdo byl v klubu ODS ke dni?
 zarazeni %>% left_join(osoby %>% select(id, given_name, family_name), , by = "id") %>% filter(org_id == "15", since <= as.Date("1993-01-01"), (until >= as.Date("1993-01-01") | is.na(until))) %>% write.xlsx(file = "C:/Users/jarom/Downloads/ODS.xlsx", sheetName = "Sheet1", row.names = FALSE)
