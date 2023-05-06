@@ -54,5 +54,37 @@ kluby_df_pivoted <- pivot_wider(kluby_df, names_from = org_abbreviation, values_
   arrange(date) %>%
   distinct(across(-date), .keep_all = TRUE) # odstraní řádky, kde nedošlo ke změně počtů
 
+###
+kluby_vo <- function(vo) {
+pspvo <- paste("PSP", vo)
+start <- organy %>%
+  filter(org_abbreviation == pspvo) %>% 
+  select(org_since)  %>% pull()
+end <- organy %>%
+  filter(org_abbreviation == pspvo) %>% 
+  select(org_until)  %>% pull()
+
+dates <- unique(zarazeni$since)
+dates <- dates[dates >= as.Date(start, origin = "1970-01-01")]
+dates <- dates[dates <= as.Date(end, origin = "1970-01-01")]
+
+kluby_df <- data.frame() # initialize empty data frame
+
+for (date in dates) {
+  kluby_count <- kluby_n(date)
+  kluby_count$date <- as.Date(date, origin = "1970-01-01")
+  kluby_df <- rbind(kluby_df, kluby_count)
+ }
+
+library(tidyr)
+kluby_df_pivoted <- pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values_fill = 0) %>% 
+  filter(Celkem >= 197 & Celkem <= 200) %>%  # odstraní řádky okolo přelomu VO
+  arrange(date) %>%
+  distinct(across(-date), .keep_all = TRUE) # odstraní řádky, kde nedošlo ke změně počtů
+
+return(kluby_df_pivoted)
+
+}
+
 # Kdo byl v klubu ODS ke dni?
 zarazeni %>% left_join(osoby %>% select(id, given_name, family_name), , by = "id") %>% filter(org_id == "15", since <= as.Date("1993-01-01"), (until >= as.Date("1993-01-01") | is.na(until))) %>% write.xlsx(file = "C:/Users/jarom/Downloads/ODS.xlsx", sheetName = "Sheet1", row.names = FALSE)
