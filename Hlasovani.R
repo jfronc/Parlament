@@ -32,7 +32,8 @@ kluby_n <- function(date) {
   zarazeni %>% 
   filter(cl_funkce == 0) %>%  # nutné odfiltrovat řádky s fcí v PK; pokud cl_funkce == 1, pak id_of odpovídá funkce:id_funkce.
   filter(org_id %in% kluby$org_id) %>%  left_join(kluby %>% select(org_id, org_abbreviation), by = "org_id") %>%
-  filter(since <= as.Date(date, origin = "1970-01-01") & (until > as.Date(date, origin = "1970-01-01") | is.na(until))) %>% group_by(org_abbreviation) %>% summarize(count = n()) %>% bind_rows(data.frame(org_abbreviation = "Celkem", count = sum(.$count)))
+  filter(since <= as.Date(date, origin = "1970-01-01") & (until > as.Date(date, origin = "1970-01-01") | is.na(until))) %>%
+  group_by(org_abbreviation) %>% summarize(count = n()) %>% bind_rows(data.frame(org_abbreviation = "Celkem", count = sum(.$count)))
 }
 
 # Vývoj počtu mandátů
@@ -50,6 +51,7 @@ for (date in dates) {
 library(tidyr)
 kluby_df_pivoted <- pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values_fill = 0) %>% 
   filter(Celkem >= 197 & Celkem <= 200) %>%  # odstraní řádky okolo přelomu VO
+  arrange(date) %>%
   distinct(across(-date), .keep_all = TRUE) # odstraní řádky, kde nedošlo ke změně počtů
 
 # Kdo byl v klubu ODS ke dni?
