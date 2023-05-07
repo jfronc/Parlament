@@ -19,6 +19,8 @@ organy <- read_delim("C:/Users/jarom/Downloads/poslanci/organy.unl",
                     locale = locale(encoding = "windows-1250"))
 # readr::read.table nepřevedla správně některé řádky
 colnames(organy) <- c('org_id', 'sup_org_id', 'type_org_id', 'org_abbreviation', 'org_name_cs', 'org_name_en', 'org_since', 'org_until', 'priority', 'members_base', 'dummy')
+organy$org_since %<>% gsub("(\\d{2})\\.(\\d{2})\\.(\\d{4})", "\\3-\\2-\\1", .) %>% as.Date()
+organy$org_until %<>% gsub("(\\d{2})\\.(\\d{2})\\.(\\d{4})", "\\3-\\2-\\1", .) %>% as.Date()
 
 kluby <- filter(organy, type_org_id == 1)
 
@@ -54,9 +56,9 @@ kluby_df_pivoted <- pivot_wider(kluby_df, names_from = org_abbreviation, values_
   arrange(date) %>%
   distinct(across(-date), .keep_all = TRUE) # odstraní řádky, kde nedošlo ke změně počtů
 
-###
 kluby_vo <- function(vo) {
-pspvo <- paste("PSP", vo)
+pspvo <- paste0("PSP", vo)
+
 start <- organy %>%
   filter(org_abbreviation == pspvo) %>% 
   select(org_since)  %>% pull()
@@ -68,6 +70,8 @@ dates <- unique(zarazeni$since)
 dates <- dates[dates >= as.Date(start, origin = "1970-01-01")]
 dates <- dates[dates <= as.Date(end, origin = "1970-01-01")]
 
+print("Dates snatched...")  
+  
 kluby_df <- data.frame() # initialize empty data frame
 
 for (date in dates) {
@@ -75,15 +79,20 @@ for (date in dates) {
   kluby_count$date <- as.Date(date, origin = "1970-01-01")
   kluby_df <- rbind(kluby_df, kluby_count)
  }
-
+  
+print("kluby_df created, pivoting now...")  
+  
 library(tidyr)
-kluby_df_pivoted <- pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values_fill = 0) %>% 
+kluby_df_pivoted <<- pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values_fill = 0) %>% 
   filter(Celkem >= 197 & Celkem <= 200) %>%  # odstraní řádky okolo přelomu VO
   arrange(date) %>%
   distinct(across(-date), .keep_all = TRUE) # odstraní řádky, kde nedošlo ke změně počtů
 
-return(kluby_df_pivoted)
-
+kluby_df_pivoted %>% 
+  select(-Celkem) %>% 
+  melt(id.vars = "date", variable.name = "club", value.name = "count") %>%
+  ggplot(aes(x = date, y = count, color = club)) + 
+  geom_line()
 }
 
 # Kdo byl v klubu ODS ke dni?
