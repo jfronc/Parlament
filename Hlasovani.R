@@ -1,22 +1,14 @@
-library(dplyr)
+library(tidyverse)
 library(magrittr)
 library(readr)
 
-hl1993 <- read.table("C:/Users/jarom/Downloads/hl-1993ps/hl1993s.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
-colnames(hl1993) <- c("id_hlasovani", "id_organ", "schuze", "cislo", "bod", "datum", "cas", "pro", "proti", "zdrzel", "nehlasoval", "prihlaseno", "kvorum", "druh_hlasovani", "vysledek", "nazev_dlouhy", "nazev_kratky")
-
-subset(hl1993, pro == kvorum)
-
-poslanec <- read.table("C:/Users/jarom/Downloads/poslanci/poslanec.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
+poslanec <- read.table("poslanci/poslanec.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
 colnames(poslanec) <- c('mp_id', 'id', 'region_id', 'list_id', 'org_id', 'web', 'street', 'municipality', 'postcode', 'email','phone', 'fax', 'psp_phone', 'facebook', 'photo', 'dummy')
 
-osoby <- read.table("C:/Users/jarom/Downloads/poslanci/osoby.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
+osoby <- read.table("poslanci/osoby.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
 colnames(osoby) <- c('id', 'title_pre', 'family_name', 'given_name', 'title_post', 'birth_date', 'gender', 'updated_on', 'death_date', 'dummy')
 
-organy <- read_delim("C:/Users/jarom/Downloads/poslanci/organy.unl", 
-                    delim = "|", 
-                    col_names = FALSE, 
-                    locale = locale(encoding = "windows-1250"))
+organy <- read_delim("poslanci/organy.unl", delim = "|", col_names = FALSE, locale = locale(encoding = "windows-1250"))
 # readr::read.table nepřevedla správně některé řádky
 colnames(organy) <- c('org_id', 'sup_org_id', 'type_org_id', 'org_abbreviation', 'org_name_cs', 'org_name_en', 'org_since', 'org_until', 'priority', 'members_base', 'dummy')
 organy$org_since %<>% gsub("(\\d{2})\\.(\\d{2})\\.(\\d{4})", "\\3-\\2-\\1", .) %>% as.Date()
@@ -24,7 +16,7 @@ organy$org_until %<>% gsub("(\\d{2})\\.(\\d{2})\\.(\\d{4})", "\\3-\\2-\\1", .) %
 
 kluby <- filter(organy, type_org_id == 1)
 
-zarazeni <- read.table("C:/Users/jarom/Downloads/poslanci/zarazeni.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
+zarazeni <- read.table("poslanci/zarazeni.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
 colnames(zarazeni) <- c('id', 'org_id', 'cl_funkce', 'since', 'until', 'since_f', 'until_f', 'dummy')
 zarazeni$since %<>% as.Date()
 zarazeni$until %<>% as.Date()
@@ -50,12 +42,12 @@ for (date in dates) {
   kluby_df <- rbind(kluby_df, kluby_count)
  }
 
-library(tidyr)
 kluby_df_pivoted <- pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values_fill = 0) %>% 
   filter(Celkem >= 197 & Celkem <= 200) %>%  # odstraní řádky okolo přelomu VO
   arrange(date) %>%
   distinct(across(-date), .keep_all = TRUE) # odstraní řádky, kde nedošlo ke změně počtů
 
+# Vývoj počtu mandátů v zadaném VO
 kluby_vo <- function(vo) {
 pspvo <- paste0("PSP", vo)
 
@@ -82,11 +74,11 @@ for (date in dates) {
   
 print("kluby_df created, pivoting now...")  
   
-library(tidyr)
-kluby_df_pivoted <<- pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values_fill = 0) %>% 
+kluby_df_pivoted <- pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values_fill = 0) %>% 
   filter(Celkem >= 197 & Celkem <= 200) %>%  # odstraní řádky okolo přelomu VO
   arrange(date) %>%
-  distinct(across(-date), .keep_all = TRUE) # odstraní řádky, kde nedošlo ke změně počtů
+  distinct(across(-date), .keep_all = TRUE) %>%  # odstraní řádky, kde nedošlo ke změně počtů
+  return()
 
 kluby_df_pivoted %>% 
   select(-Celkem) %>% 
@@ -95,5 +87,5 @@ kluby_df_pivoted %>%
   geom_line()
 }
 
-# Kdo byl v klubu ODS ke dni?
-zarazeni %>% left_join(osoby %>% select(id, given_name, family_name), , by = "id") %>% filter(org_id == "15", since <= as.Date("1993-01-01"), (until >= as.Date("1993-01-01") | is.na(until))) %>% write.xlsx(file = "C:/Users/jarom/Downloads/ODS.xlsx", sheetName = "Sheet1", row.names = FALSE)
+# Kdo byl v klubu ODS k 1. 1. 1993?
+zarazeni %>% left_join(osoby %>% select(id, given_name, family_name), , by = "id") %>% filter(org_id == "15", since <= as.Date("1993-01-01"), (until >= as.Date("1993-01-01") | is.na(until))) %>% write.xlsx(file = "ODS.xlsx", sheetName = "Sheet1", row.names = FALSE)
