@@ -74,18 +74,22 @@ for (date in dates) {
   
 print("kluby_df created, pivoting now...")  
   
-kluby_df_pivoted <- pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values_fill = 0) %>% 
+pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values_fill = 0) %>% 
   filter(Celkem >= 197 & Celkem <= 200) %>%  # odstraní řádky okolo přelomu VO
   arrange(date) %>%
   distinct(across(-date), .keep_all = TRUE) %>%  # odstraní řádky, kde nedošlo ke změně počtů
-  return()
+}
 
-kluby_df_pivoted %>% 
+# Graf
+plot_vo <- function(vo) {
+  kluby_vo(vo) %>% 
   select(-Celkem) %>% 
   melt(id.vars = "date", variable.name = "club", value.name = "count") %>%
-  ggplot(aes(x = date, y = count, color = club)) + 
+  ggplot(aes(x = date, y = count, color = club)) +
+  ggtitle(paste(vo, ". volební období")) + 
   geom_line()
 }
+
 
 # Příklad: Kdo byl v klubu ODS k 1. 1. 1993?
 zarazeni %>% left_join(osoby %>% select(id, given_name, family_name), , by = "id") %>% filter(org_id == "15", since <= as.Date("1993-01-01"), (until >= as.Date("1993-01-01") | is.na(until))) %>% write.xlsx(file = "ODS.xlsx", sheetName = "Sheet1", row.names = FALSE)
