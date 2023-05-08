@@ -87,5 +87,5 @@ kluby_df_pivoted %>%
   geom_line()
 }
 
-# Kdo byl v klubu ODS k 1. 1. 1993?
+# Příklad: Kdo byl v klubu ODS k 1. 1. 1993?
 zarazeni %>% left_join(osoby %>% select(id, given_name, family_name), , by = "id") %>% filter(org_id == "15", since <= as.Date("1993-01-01"), (until >= as.Date("1993-01-01") | is.na(until))) %>% write.xlsx(file = "ODS.xlsx", sheetName = "Sheet1", row.names = FALSE)
