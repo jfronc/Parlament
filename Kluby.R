@@ -33,8 +33,7 @@ kluby_n <- function(date) {
 dates <- unique(zarazeni$since)
 dates <- dates[dates >= as.Date("1992-01-01", origin = "1970-01-01")]
 
-kluby_df <- data.frame() # initialize empty data frame
-
+kluby_df <- data.frame()
 for (date in dates) {
   kluby_count <- kluby_n(date)
   kluby_count$date <- as.Date(date, origin = "1970-01-01")
@@ -48,6 +47,10 @@ kluby_df_pivoted <- pivot_wider(kluby_df, names_from = org_abbreviation, values_
 
 # Vývoj počtu mandátů v zadaném VO
 kluby_vo <- function(vo) {
+  if (!is.numeric(vo) || !vo %% 1 == 0 || vo <= 0 || vo >= 10) {
+    stop("vo must be a positive integer smaller than 10")
+  }
+
 pspvo <- paste0("PSP", vo)
 
 start <- organy %>%
@@ -60,6 +63,14 @@ end <- organy %>%
 dates <- unique(zarazeni$since)
 dates <- dates[dates >= as.Date(start, origin = "1970-01-01")]
 dates <- dates[dates <= as.Date(end, origin = "1970-01-01")]
+
+if (vo != 1) {  # odstraní přečuhující konec předchozího VO
+  pspvo_prev <- paste0("PSP", vo - 1)
+  end_prev <- organy %>%
+   filter(org_abbreviation == pspvo_prev) %>% 
+   select(org_until)  %>% pull()
+  dates <- dates[dates >= as.Date(end_prev, origin = "1970-01-01")]
+  }
 
 print("Dates snatched...")  
   
