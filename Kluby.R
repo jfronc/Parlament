@@ -1,15 +1,14 @@
 library(tidyverse)
 library(magrittr)
-library(readr)
 
-poslanec <- read.table("poslanci/poslanec.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
+poslanec <- readr::read.table("poslanci/poslanec.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
 colnames(poslanec) <- c('mp_id', 'id', 'region_id', 'list_id', 'org_id', 'web', 'street', 'municipality', 'postcode', 'email','phone', 'fax', 'psp_phone', 'facebook', 'photo', 'dummy')
 
 osoby <- read.table("poslanci/osoby.unl", sep="|", header=FALSE, fileEncoding = "windows-1250")
 colnames(osoby) <- c('id', 'title_pre', 'family_name', 'given_name', 'title_post', 'birth_date', 'gender', 'updated_on', 'death_date', 'dummy')
 
-organy <- read_delim("poslanci/organy.unl", delim = "|", col_names = FALSE, locale = locale(encoding = "windows-1250"))
-# readr::read.table nepřevedla správně některé řádky
+organy <- readr::read_delim("poslanci/organy.unl", delim = "|", col_names = FALSE, locale = locale(encoding = "windows-1250"))
+# read.table nepřevedla správně některé řádky
 colnames(organy) <- c('org_id', 'sup_org_id', 'type_org_id', 'org_abbreviation', 'org_name_cs', 'org_name_en', 'org_since', 'org_until', 'priority', 'members_base', 'dummy')
 organy$org_since %<>% gsub("(\\d{2})\\.(\\d{2})\\.(\\d{4})", "\\3-\\2-\\1", .) %>% as.Date()
 organy$org_until %<>% gsub("(\\d{2})\\.(\\d{2})\\.(\\d{4})", "\\3-\\2-\\1", .) %>% as.Date()
@@ -76,8 +75,9 @@ print("kluby_df created, pivoting now...")
   
 pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values_fill = 0) %>% 
   filter(Celkem >= 197 & Celkem <= 200) %>%  # odstraní řádky okolo přelomu VO
+  select(-which(sapply(., function(x) all(x == 0)))) %>%  # v návaznosti odstraní sloupce PK hraničního VO
   arrange(date) %>%
-  distinct(across(-date), .keep_all = TRUE) %>%  # odstraní řádky, kde nedošlo ke změně počtů
+  distinct(across(-date), .keep_all = TRUE) # odstraní řádky, kde nedošlo ke změně počtů
 }
 
 # Graf
@@ -86,8 +86,8 @@ plot_vo <- function(vo) {
   select(-Celkem) %>% 
   melt(id.vars = "date", variable.name = "club", value.name = "count") %>%
   ggplot(aes(x = date, y = count, color = club)) +
-  ggtitle(paste(vo, ". volební období")) + 
-  geom_line()
+  ggtitle(paste0(vo, ". volební období")) + 
+  geom_step() # schody
 }
 
 
