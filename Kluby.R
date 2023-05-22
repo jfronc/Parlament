@@ -95,7 +95,7 @@ pivot_wider(kluby_df, names_from = org_abbreviation, values_from = count, values
 plot_vo <- function(vo) {
   kluby_vo(vo) %>% 
   select(-Celkem) %>% 
-  melt(id.vars = "date", variable.name = "club", value.name = "count") %>%
+  reshape2::melt(id.vars = "date", variable.name = "club", value.name = "count") %>%
   ggplot(aes(x = date, y = count, color = club)) +
   ggtitle(paste0(vo, ". volební období")) + 
   geom_step() # schody
