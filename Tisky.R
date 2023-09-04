@@ -33,10 +33,13 @@ prechody$cesta <- paste0(prechody$odkud, " / ", prechody$popis, " / ", prechody$
 hist %<>% left_join(tisky %>% select(id_tisk, ct), by = "id_tisk")
 hist %<>% left_join(prechody %>% select(id_prechod, cesta), by = "id_prechod")
 
+# spočítáme, kolik dní trvá odeslat zákon ze Sněmovny do Sbírky
 hist2 <- hist %>% dplyr::filter(id_prechod %in% c(57, 151, 1140, 2078, 2080, 2099))
 
 hist3 <- subset(hist2, select = c(id_tisk, ct)) %>% distinct()
 hist3 %<>% left_join(hist2 %>% dplyr::filter(id_prechod %in% c(2078, 2080, 2099)) %>% select(id_tisk, datum), by = "id_tisk")
 hist3 %<>% left_join(hist2 %>% dplyr::filter(id_prechod %in% c(57, 151, 1140)) %>% select(id_tisk, datum), by = "id_tisk")
 colnames(hist3) <- c('id_tisk', 'ct', 'PS', 'Sb')
+hist3 %<>% dplyr::filter(PS != "1900-01-01") # odfiltruje tisky s chybějícím datem, jakož i další NA hodnoty způsobené nestandardním procesem (veto prezidenta apod.)
 hist3$days <- hist3$Sb - hist3$PS
+as.numeric(hist3$days) %>% summary()
