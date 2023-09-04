@@ -35,7 +35,7 @@ hist %<>% left_join(prechody %>% select(id_prechod, cesta), by = "id_prechod")
 
 hist2 <- hist %>% dplyr::filter(id_prechod %in% c(57, 151, 1140, 2078, 2080, 2099))
 
-hist3 <- subset(hist2, select = c(id_tisk, ct))
+hist3 <- subset(hist2, select = c(id_tisk, ct)) %>% distinct()
 hist3 %<>% left_join(hist2 %>% dplyr::filter(id_prechod %in% c(2078, 2080, 2099)) %>% select(id_tisk, datum), by = "id_tisk")
 hist3 %<>% left_join(hist2 %>% dplyr::filter(id_prechod %in% c(57, 151, 1140)) %>% select(id_tisk, datum), by = "id_tisk")
 colnames(hist3) <- c('id_tisk', 'ct', 'PS', 'Sb')
