@@ -9,6 +9,7 @@ tisky$roz1 %<>% gsub("(\\d{2})\\.(\\d{2})\\.(\\d{4})", "\\3-\\2-\\1", .) %>% as.
 
 hist <- readr::read_delim("tisky/hist.unl", delim = "|", col_names = FALSE, locale = locale(encoding = "windows-1250")) %>% subset(select = -c(X6,X7,X8,X9,X10,X11,X13,X16))
 colnames(hist) <- c('id_hist', 'id_tisk', 'datum', 'id_hlas', 'id_prechod', 'sb_publ', 'sb_c', 'pozn')
+hist$datum %<>% as.Date()
 hist$sb_publ %<>% gsub("(\\d{2})\\.(\\d{2})\\.(\\d{4})", "\\3-\\2-\\1", .) %>% as.Date()
 
 typ_stavu <- readr::read_delim("tisky/typ_stavu.unl", delim = "|", col_names = FALSE, locale = locale(encoding = "windows-1250")) %>% subset(select = -c(X3))
@@ -28,3 +29,14 @@ prechody %<>% left_join(stavy %>% select(id_stav, popis), by = join_by(odkud == 
 prechody %<>% left_join(stavy %>% select(id_stav, popis), by = join_by(kam == id_stav))
 colnames(prechody) <- c('id_prechod', 'id_odkud', 'id_kam', 'id_akce', 'typ', 'popis', 'odkud', 'kam')
 prechody$cesta <- paste0(prechody$odkud, " / ", prechody$popis, " / ", prechody$kam)
+
+hist %<>% left_join(tisky %>% select(id_tisk, ct), by = "id_tisk")
+hist %<>% left_join(prechody %>% select(id_prechod, cesta), by = "id_prechod")
+
+hist2 <- hist %>% dplyr::filter(id_prechod %in% c(57, 151, 1140, 2078, 2080, 2099))
+
+hist3 <- subset(hist2, select = c(id_tisk, ct))
+hist3 %<>% left_join(hist2 %>% dplyr::filter(id_prechod %in% c(2078, 2080, 2099)) %>% select(id_tisk, datum), by = "id_tisk")
+hist3 %<>% left_join(hist2 %>% dplyr::filter(id_prechod %in% c(57, 151, 1140)) %>% select(id_tisk, datum), by = "id_tisk")
+colnames(hist3) <- c('id_tisk', 'ct', 'PS', 'Sb')
+hist3$days <- hist3$Sb - hist3$PS
