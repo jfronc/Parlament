@@ -1,7 +1,13 @@
 library(tidyverse)
 library(magrittr)
 
-tisky <- readr::read_delim("tisky/tisky.unl", delim = "|", col_names = FALSE, locale = locale(encoding = "windows-1250")) %>% subset(select = -c(X5,X7,X10,X15,X17,X18,X23,X24,X25))
+#  stáhneme a extrahujeme data do složky
+temp <- tempfile()
+download.file("https://www.psp.cz/eknih/cdrom/opendata/tisky.zip", temp)
+file.path(getwd(), "tisky") %>% unzip(temp, exdir = .)
+file.remove(temp)
+
+tisky <- readr::read_delim("tisky/tisky.unl", delim = "|", col_names = FALSE, locale = locale(encoding = "windows-1250")) %>% subset(select = -c(X5,X7,X10,X15,X17,X18,X23,X24,X25)) #  každá tabulka se převádí s plonkovým posledním sloupcem
 colnames(tisky) <- c('id_tisk', 'id_druh', 'id_stav', 'ct', 'id_org', 'vo', 'id_osoba', 'shortname', 'predlozeno', 'roz1', 'dalsi', 'name', '90', 'url', 'eu', 'roz2')
 tisky %<>% dplyr::filter(id_druh == 1 | id_druh == 2) #  vytřídíme návrhy zákonů
 tisky$predlozeno %<>% gsub("(\\d{2})\\.(\\d{2})\\.(\\d{4})", "\\3-\\2-\\1", .) %>% as.Date()
