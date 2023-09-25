@@ -36,7 +36,7 @@ prechody %<>% left_join(stavy %>% select(id_stav, popis), by = join_by(kam == id
 colnames(prechody) <- c('id_prechod', 'id_odkud', 'id_kam', 'id_akce', 'typ', 'popis', 'odkud', 'kam')
 prechody$cesta <- paste0(prechody$odkud, " / ", prechody$popis, " / ", prechody$kam)
 
-hist %<>% left_join(tisky %>% select(id_tisk, ct), by = "id_tisk")
+hist %<>% left_join(tisky %>% select(id_tisk, ct, shortname), by = "id_tisk")
 hist %<>% left_join(prechody %>% select(id_prechod, cesta), by = "id_prechod")
 
 # spočítáme, kolik dní trvá odeslat zákon ze Sněmovny do Sbírky
