@@ -8,11 +8,15 @@ Skript *Senat_Hlasovani.R* umožňuje vizualizovat hlasování v Senátu dle klu
 
 [Poslanecká sněmovna](https://www.psp.cz/sqw/hp.sqw?k=1300)
 
-### Pythonovská inspirace
+### Inspirace
+
+Pro utřídění dat z PSP jsem se inspiroval Python kódy:
 
 https://github.com/kokes/od/tree/main/data/psp
 
 https://github.com/michalskop/cz-psp-votes-2021-202x
+
+Nově dělal obdobnou věc v R: https://github.com/DataRozhlas/senat-2024-src/blob/main/R/nacteni.R
 
 ### Poznámka
 
