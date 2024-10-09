@@ -7,8 +7,9 @@ division = function (nr) {
   page = paste0(base_url, nr) %>% read_html()
   pro = list()
   proti = list()
-  for (i in (1:6))  {
-    table = xml_find_all(page, "//table[@class='PE_zebra outlineRows']")[i] %>% xml_find_all(".//tr") %>% xml_text()
+  tables = xml_find_all(page, "//table[@class='PE_zebra outlineRows']")
+  for (i in seq_along(tables))  {
+    table = tables[i] %>% xml_find_all(".//tr") %>% xml_text()
     pro[i] = str_count(table, "A\\s") %>% sum()
     proti[i] = str_count(table, "(N|X)\\s") %>% sum() # zdržení se je efektivně hlas proti
   }
@@ -19,12 +20,12 @@ division = function (nr) {
   df %<>% pivot_longer(cols = c(pro, proti), names_to = "Position", values_to = "Votes")
   
   ggplot(df, aes(x = Position, y = Votes, fill = klub)) +
-    geom_bar(position="stack", stat = "identity") +
-    labs(title = "Votes by Party and Position", x = "Party", y = "Hlasy") +
-    geom_text(aes(label = Votes), size = 6, position = position_stack(vjust = 0.5), check_overlap = TRUE) +
+    geom_bar(position="stack", stat = "identity", width = 0.5) +
+    labs(title = "Pro a proti podle klubů", x = "Hlasování", y = "Hlasy") +
+    geom_text(aes(label = ifelse(Votes >= 2, Votes, "")), size = 5, position = position_stack(vjust = 0.5), check_overlap = TRUE) +
     theme_minimal()
 }
-    
-# division(22440)
 
-# TODO: zobecnit pro různá funkční období, nastavit barvy, z geom_text vyhodit malá čísla
+# division(22488)
+
+# TODO: zobecnit pro různá funkční období, nastavit barvy
